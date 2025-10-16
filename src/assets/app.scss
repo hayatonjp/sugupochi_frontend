@@ -1,0 +1,153 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:root {
+    --bs-primary: #4f46e5;
+    --bs-primary-rgb: 79, 70, 229;
+    --bs-primary-hover: #4338ca;
+    --bs-primary-light: #e8eafd;
+}
+
+/** 背景 **/
+/*=============
+.bg_pattern
+==============*/
+
+.bg_pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255,255,255,0.5);
+    z-index: -1;
+}
+.Paper_v2 {
+    background-image:
+      repeating-linear-gradient(to bottom,
+        transparent 25px,
+        rgba(0, 0, 0, 0.04) 26px,  rgba(0, 0, 0, 0.04) 26px,
+        transparent 27px,  transparent 51px, 
+        rgba(0, 0, 0, 0.04) 52px,  rgba(0, 0, 0, 0.04) 52px,
+        transparent 53px,  transparent 77px, 
+        rgba(0, 0, 0, 0.04) 78px,  rgba(0, 0, 0, 0.04) 78px,
+        transparent 79px,  transparent 103px, 
+        rgba(0, 0, 0, 0.04) 104px,  rgba(0, 0, 0, 0.04) 104px,
+        transparent 105px,  transparent 129px, 
+        rgba(0, 0, 0, 0.04) 130px,  rgba(0, 0, 0, 0.04) 130px),
+  
+      repeating-linear-gradient(to right,
+        transparent 25px,
+        rgba(0, 0, 0, 0.04) 26px,  rgba(0, 0, 0, 0.04) 26px,
+        transparent 27px,  transparent 51px, 
+        rgba(0, 0, 0, 0.04) 52px,  rgba(0, 0, 0, 0.04) 52px,
+        transparent 53px,  transparent 77px, 
+        rgba(0, 0, 0, 0.04) 78px,  rgba(0, 0, 0, 0.04) 78px,
+        transparent 79px,  transparent 103px, 
+        rgba(0, 0, 0, 0.04) 104px,  rgba(0, 0, 0, 0.04) 104px,
+        transparent 105px,  transparent 129px, 
+        rgba(0, 0, 0, 0.04) 130px,  rgba(0, 0, 0, 0.04) 130px);
+  }
+  
+  /*=============
+  base
+  ==============*/
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  body {
+    font-family: YuGothic, "游ゴシック体", "Yu Gothic", "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    letter-spacing: .025em;
+    line-height: 1.8;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+/* アニメーション */
+.fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* アイコン */
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #d1fae5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.success-icon i {
+    font-size: 2.5rem;
+    color: #059669;
+}
+
+/** プログレスバー **/
+.p-progressbar-label {
+    position: absolute;
+}
+
+/** 共通 **/
+.container {
+    max-width: 800px;
+}
+
+/** ヘッダー **/
+.main {
+    min-height: 100vh;
+    padding: 150px 0 80px;
+
+    @media screen and (max-width: 768px) {
+        padding: 80px 0 80px;
+    }
+}
+
+header {
+    position: sticky;
+}
+
+footer {
+    background: #2d3748;
+}
+
+.footer-content {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.br-sp {
+    display: none;
+    
+    @media screen  and (max-width: 768px) {
+        display: block;
+    }
+}
+
+.underline-hover {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
