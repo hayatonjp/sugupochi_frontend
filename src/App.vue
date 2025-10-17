@@ -1,11 +1,7 @@
-<script setup>
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
   <header class="d-flex justify-content-between align-items-center py-2 px-4 bg-white border fixed-top">
     <a href="/" class="text-reset text-decoration-none fs-4">すぐポチアンケ</a>
-    <button type="button" class="btn btn-link text-reset text-decoration-none border cursor-pointer" data-bs-toggle="modal" data-bs-target="#howto_modal">使い方</button>
+    <button type="button" class="btn btn-link text-reset text-decoration-none border cursor-pointer" @click="openModal">使い方</button>
   </header>
   <main class="main">
     <RouterView />
@@ -35,6 +31,32 @@ import { RouterView } from 'vue-router'
           </small>
       </div>
   </footer>
+  <HowToModal v-if="isModalVisible" @close="closeModal"/>
 </template>
 
-<style scoped></style>
+<script>
+import { RouterView } from 'vue-router'
+import HowToModal from './views/HowToModal.vue'
+export default {
+    data() {
+        return {
+            isModalVisible: false,
+        };
+    },
+    components: {
+        RouterView,
+        HowToModal,
+    },
+    methods: {
+        openModal() {
+            this.isModalVisible = true;
+            document.body.classList.add('modal-open')
+        },
+        closeModal() {
+            this.isModalVisible = false;
+            document.body.classList.remove('modal-open')
+        },
+    },
+}
+</script>
+
