@@ -4,7 +4,7 @@ import axios from 'axios'
 const getApiUrl = () => {
   // 本番環境では環境変数VITE_API_URLを使用
   if (import.meta.env.PROD && import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL
+    return import.meta.env.VITE_API_URL + '/api'
   }
   
   // 開発環境では相対パスを使用（Viteのproxyが処理）
