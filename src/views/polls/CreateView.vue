@@ -8,8 +8,7 @@
                 </ul>
             </div>
             <div ref="adMaxSpTop" class="ad-max-sp"></div>
-            <form class="mb-3" method="POST" action="/polls" @submit.prevent="handleSubmit">
-                <input type="hidden" name="_token" :value="$props.csrfToken">
+            <form class="mb-3" @submit.prevent="handleSubmit">
                 <h1 class="text-center mt-2">アンケート作成</h1>
                 <div class="mb-3">
                     <label for="title" class="form-label">タイトル*</label>
@@ -49,11 +48,10 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
     props: {
-        csrfToken: { type: String, required: true },
         errorsJson: { type: String, required: false },
-        old: { type: Object, required: false },
     },
     mounted() {
         this.setAdMaxPcLeft();
@@ -63,12 +61,12 @@ export default {
     },
     data() {
         return {
-            title: this.old['title'] || '',
-            description: this.old['description'] || '',
+            title: '',
+            description: '',
             pollOptions: this.initOptions(),
-            expiresAt: this.old['expires_at'] || null,
-            passcode: this.old['passcode'] || null,
-            errors: JSON.parse(this.errorsJson || '[]'),
+            expiresAt: null,
+            passcode: null,
+            errors: JSON.parse(this.errorsJson ?? '[]'),
             isSubmitting: false,
         }
     },
@@ -108,12 +106,6 @@ export default {
             this.createAdIframe('adMaxSpBottom', 'https://adm.shinobi.jp/s/9eb4179c1a514d7fa65027d3e623a304');
         },
         initOptions() {
-            if (this.old['options']) {
-                return this.old['options'].map((option, index) => {
-                    return { id: index + 1, text: option }
-                });
-            }
-
             return [
                 { id: 1, text: '' },
                 { id: 2, text: '' },
@@ -130,8 +122,28 @@ export default {
                 return;
             }
             this.isSubmitting = true;
-            // 一旦Vueから通常のform送信を行う（submitイベントを再度トリガー）
-            this.$el.querySelector('form').submit();
+            
+            axios.post('/api/polls', {
+                title: this.title,
+                description: this.description,
+                options: this.pollOptions.map(option => option.text),
+                expires_at: this.expiresAt,
+                passcode: this.passcode,
+            })
+            .then(response => {
+                window.location.href = `/polls/${response.data.pollUuid}/create/complete`;
+            })
+            .catch(error => {
+                console.log(error)
+                if (error.response && error.response.data && error.response.data.errors) {
+                    this.errors = Object.values(error.response.data.errors).flat();
+                } else {
+                    this.errors = ['アンケートの作成中にエラーが発生しました。'];
+                }
+            })
+            .finally(() => {
+                this.isSubmitting = false;
+            });
         },
     },
 }

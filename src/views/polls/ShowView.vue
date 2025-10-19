@@ -3,7 +3,7 @@
         <div v-if="!isVerified" class="d-flex justify-content-center align-items-center" tabindex="-1">
             <div class="modal-dialog d-flex justify-content-center align-items-center password-modal">
                 <div class="modal-content border p-4 rounded bg-white">
-                    <h4 class="text-center mb-3" style="word-break: keep-all;">{{ poll.title }}のアンケートに<br class="br-sp"/>投票する</h4>
+                    <h4 class="text-center mb-3" style="word-break: keep-all;">{{ poll?.title }}のアンケートに<br class="br-sp"/>投票する</h4>
                     <h6 class="text-center mb-3">パスコードを入力してください</h6>
                     <input type="text" class="form-control mb-3" v-model="password" placeholder="パスコードを入力">
                     <button type="button" class="btn btn-primary" @click="verifyPassword">送信</button>
@@ -14,22 +14,21 @@
             <div class="poll-container">
                 <div class="card border fade-in">
                     <div class="poll-header">
-                        <h1 class="poll-title">{{ poll.title }}</h1>
-                        <p class="poll-description">{{ poll.description }}</p>
+                        <h1 class="poll-title">{{ poll?.title }}</h1>
+                        <p class="poll-description">{{ poll?.description }}</p>
                         <div class="expire-info">
                             <i class="bi bi-clock"></i>
-                            <span>有効期限: {{ poll.expires_at }}</span>
+                            <span>有効期限: {{ poll?.expires_at }}</span>
                         </div>
                     </div>
 
-                    <form method="POST" :action="'/polls/'+poll.uuid+'/vote'" class="form"  @submit.prevent="handleSubmit">
-                        <input type="hidden" name="_token" :value="$props.csrfToken">
-                        <input type="hidden" name="poll_id" :value="poll.id">
-                        <input type="hidden" name="poll_uuid" :value="poll.uuid">
+                    <form class="form" @submit.prevent="handleSubmit">
+                        <input type="hidden" name="poll_id" :value="poll?.id">
+                        <input type="hidden" name="poll_uuid" :value="poll?.uuid">
                         <div class="disabled" v-if="isExpired" style="font-size: 2rem;">投票期間は終了しました</div>
                         <div class="disabled" v-else-if="isVoted" style="font-size: 2rem;">投票済みです</div>
                         <div class="poll-options">
-                            <div v-for="option in poll.poll_options" :key="option.id" class="poll-option" @click="selectOption(option.id)">
+                            <div v-for="option in poll?.poll_options" :key="option.id" class="poll-option" @click="selectOption(option.id)">
                                 <input type="radio" name="poll_option_id" :id="'option'+option.id" v-model="selectedOption" :value="option.id" :checked="option.id == selectedOption">
                                 <label :for="'option'+option.id">{{ option.text }}</label>
                             </div>
@@ -49,15 +48,15 @@
                         <ul class="poll-info-list">
                             <li class="poll-info-item">
                                 <i class="bi bi-calendar-event"></i>
-                                作成日: {{ jst(poll.created_at) }}
+                                作成日: {{ jst(poll?.created_at) }}
                             </li>
                             <li class="poll-info-item">
                                 <i class="bi bi-people"></i>
-                                現在の投票数: {{ poll.votes?.length }}
+                                現在の投票数: {{ poll?.votes?.length }}
                             </li>
                             <li class="poll-info-item">
                                 <i class="bi bi-bar-chart"></i>
-                                <a :href="`/polls/${poll.uuid}/results`" class="link" :class="!poll.votes?.length ? 'disabled-link' : ''">結果を見る</a>
+                                <a :href="`/polls/${poll?.uuid}/results`" class="link" :class="!poll?.votes?.length ? 'disabled-link' : ''">結果を見る</a>
                             </li>
                         </ul>
                     </div>
@@ -68,31 +67,42 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { jst } from '@/utils/date'
 import { getVoterIdentifier } from '@/utils/localStorage'
 import { getVerifiedPasscode, saveVerifiedPasscode } from '../../utils/localStorage';
 export default {
-    props: {
-        poll: { type: Object, required: true },
-        csrfToken: { type: String, required: true },
-    },
     data() {
         return {
-            selectedOption: this.poll.poll_options[0]?.id,
-            isVerified: getVerifiedPasscode(this.poll.uuid) ? true : false,
-            isExpired: new Date(this.poll.expires_at).toISOString() < new Date().toISOString(),
+            poll: null,
+            selectedOption: null,
+            isVerified: false,
+            isExpired: false,
             password: null,
-            isVoted: getVoterIdentifier(this.poll.uuid) ? true : false,
+            isVoted: false,
             isSubmitting: false,
         }
+    },
+    mounted() {
+        const uuid = this.$route.params.uuid;
+        axios.get(`/api/polls/${uuid}`)
+            .then(response => {
+                this.poll = response.data;
+                this.isVerified = getVerifiedPasscode(response.data?.uuid) ? true : false;
+                this.isExpired = new Date(response.data?.expires_at)?.toISOString() < new Date().toISOString();
+                this.isVoted = getVoterIdentifier(response.data?.uuid) ? true : false;
+            })
+            .catch(error => {
+                window.location.href = "/"
+            })
     },
     methods: {
         selectOption(optionId) {
             this.selectedOption = optionId;
         },
         verifyPassword() {
-            if (this.password === this.poll.passcode) {
-                saveVerifiedPasscode(this.poll.uuid)
+            if (this.password === this.poll?.passcode) {
+                saveVerifiedPasscode(this.poll?.uuid)
                 this.isVerified = true;
             } else {
                 alert('パスコードが正しくありません');
@@ -106,8 +116,19 @@ export default {
                 return;
             }
             this.isSubmitting = true;
-            // 一旦Vueから通常のform送信を行う（submitイベントを再度トリガー）
-            this.$el.querySelector('form').submit();
+            axios.post(`/api/polls/${this.poll?.uuid}/vote`, {
+                poll_option_id: this.selectedOption,
+            })
+            .then(response => {
+                const voterIdentifier = response.data?.voterIdentifier;
+                window.location.href = `/api/polls/${this.poll?.uuid}/vote/complete${voterIdentifier ? '?voterIdentifier=' + voterIdentifier : ''}`;
+            })
+            .catch(error => {
+                alert('投票中にエラーが発生しました。');
+            })
+            .finally(() => {
+                this.isSubmitting = false;
+            });
         },
     },
 }

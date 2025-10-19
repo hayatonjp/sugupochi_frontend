@@ -39,7 +39,7 @@ const router = createRouter({
       component: PollCreateView
     },
     {
-      path: '/polls/:uuid/complete',
+      path: '/polls/:uuid/create/complete',
       name: 'polls.create.complete',
       component: PollCreateCompleteView
     },

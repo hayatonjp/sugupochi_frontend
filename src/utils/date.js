@@ -8,5 +8,5 @@ export function jst(date) {
     const min = String(jst.getMinutes()).padStart(2, '0')
     const sec = String(jst.getSeconds()).padStart(2, '0')
 
-    return `${yyyy}/${mm}/${dd} ${hh}:${min}:${sec}`
+    return `${yyyy}/${mm}/${dd} ${hh}:${min}`
 }

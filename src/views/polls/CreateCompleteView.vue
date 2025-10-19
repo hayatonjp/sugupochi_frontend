@@ -18,19 +18,19 @@
 
                 <div class="card mb-4 fade-in p-0">
                     <div class="p-4">
-                        <h5 class="mb-2">アンケート名: {{ poll.title }}</h5>
-                        <h5 class="mb-2">説明文: {{ poll.description ?? 'なし'}}</h5>
-                        <h5 class="mb-4 fw-bold">パスコード: {{ poll.passcode }}<span style="font-size: 14px;"><br class="br-sp"/>（パスコードを投票者に共有してください）</span></h5>
+                        <h5 class="mb-2">アンケート名: {{ poll?.title }}</h5>
+                        <h5 class="mb-2">説明文: {{ poll?.description ?? 'なし'}}</h5>
+                        <h5 class="mb-4 fw-bold">パスコード: {{ poll?.passcode }}<span style="font-size: 14px;"><br class="br-sp"/>（パスコードを投票者に共有してください）</span></h5>
                         <div class="d-flex gap-2 mb-2">
                             <p class="m-0">作成日時:</p>
-                            <p class="m-0">{{ jst(poll.created_at) }}</p>
+                            <p class="m-0">{{ jst(poll?.created_at) }}</p>
                         </div>
                         <div class="d-flex gap-2 mb-2">
                             <p class="m-0">有効期限:</p>
-                            <p class="m-0">{{ poll.expires_at }}</p>
+                            <p class="m-0">{{ poll?.expires_at }}</p>
                         </div>
                         <div class="d-flex flex-column gap-2">
-                            <div v-for="(option, index) in poll.poll_options" :key="poll.id" class="m-0 d-flex gap-2">
+                            <div v-for="(option, index) in poll?.poll_options" :key="poll.id" class="m-0 d-flex gap-2">
                                 <p class="m-0">選択肢{{ index+1 }}:</p>
                                 <p class="m-0">{{ option.text }}</p>
                             </div>
@@ -57,13 +57,13 @@
                         </div>
                         <h5 class="mt-4 mb-0">読み取りコードで共有</h5>
                         <div class="d-flex justify-content-center align-items-center mt-3">
-                            <vue-qrcode :value="shareUrl" :options="{ width: 300 }"></vue-qrcode>
+                            <VueQrcode :value="shareUrl" :options="{ width: 300 }"></VueQrcode>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-center flex-wrap fade-in p-0">
-                    <a :href="`/polls/${poll.uuid}/results`" class="btn btn-success btn-lg w-100">
+                    <a :href="`/polls/${poll?.uuid}/results`" class="btn btn-success btn-lg w-100">
                         投票画面を確認
                     </a>
                 </div>
@@ -75,24 +75,32 @@
 
 <script>
 import { jst } from '@/utils/date'
+import axios from 'axios';
+import VueQrcode from '@chenfengyuan/vue-qrcode'
 export default {
-    props: {
-        poll: { type: Object, required: true },
-        shareUrl: { type: String, required: true },
-        isCreatedPoll: { type: Number, required: true },
-    },
     data() {
         return {
             isCopied: false,
+            poll: null,
+            shareUrl: null,
         }
     },
+    components: {
+        VueQrcode,
+    },
     mounted() {
+        const uuid = this.$route.params.uuid;
+        axios.get(`/api/polls/${uuid}/create/complete`)
+            .then(response => {
+                this.poll = response.data.poll;
+                this.shareUrl = response.data.shareUrl;
+            })
+            .catch(error => {
+                console.log(error)
+            });
         this.setAdMaxPcLeft();
         this.setAdMaxPcRight();
         this.setAdMaxSpTop();
-        if (this.isCreatedPoll != 1) {
-             location.href = "/"
-        } 
     },
     methods: {
         createAdIframe(refName, scriptSrc, width = '100%', height = '100%') {

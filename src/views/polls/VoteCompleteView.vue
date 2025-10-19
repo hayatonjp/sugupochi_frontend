@@ -17,9 +17,11 @@
 <script>
 import { getVoterIdentifier, saveVoterIdentifier } from '@/utils/localStorage'
 export default {
-    props: {
-        poll: { type: Object, required: true },
-        voterIdentifier: { type: String, required: true },
+    data() {
+        return {
+            poll: null,
+            voterIdentifier: null,
+        }
     },
     methods: {
         createAdIframe(refName, scriptSrc, width = '100%', height = '100%') {
@@ -48,13 +50,23 @@ export default {
             this.createAdIframe('adMaxPc', 'https://adm.shinobi.jp/s/6e630318c426ca1ff31e6ecdc7a458a9', '300px', '250px');
         },
     },
-    mounted() {
+    async mounted() {
+        const uuid = this.$route.params.uuid;
+        await axios.get(`/polls/${uuid}/vote/complete`)
+            .then(response => {
+                this.poll = response.data;
+                this.voterIdentifier = getVoterIdentifier(response.data?.uuid);
+            })
+            .catch(error => {
+                window.location.href = "/";
+            });
+            
         this.setAdMaxPc();
         if (!this.voterIdentifier) {
             location.href = "/"
         }
-        if (!getVoterIdentifier(this.poll.uuid)) {
-            saveVoterIdentifier(this.poll.uuid)
+        if (!getVoterIdentifier(response.data?.uuid)) {
+            saveVoterIdentifier(response.data?.uuid)
         }
     },
 }

@@ -36,7 +36,7 @@
 
 <script>
 import { RouterView } from 'vue-router'
-import HowToModal from './views/HowToModal.vue'
+import HowToModal from './components/HowToModal.vue'
 export default {
     data() {
         return {

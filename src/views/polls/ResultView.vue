@@ -1,6 +1,6 @@
 <template>
 <div class="complete-container">
-    <h1 class="text-center">{{ poll.title }}の投票結果</h1>
+    <h1 class="text-center">{{ poll?.title }}の投票結果</h1>
     <h5>投票時間: 残り{{ remainingTime  }}</h5>
     <div class="card p-4 mt-2 fade-in">
         <h2 class="h4 mb-3">投票結果グラフ</h2>
@@ -26,8 +26,8 @@
         </div>
     </div>
     <div class="card p-4 mt-4 fade-in">
-        <h2 class="h4 mb-2 text-center">{{ poll.title }}</h2>
-        <p class="text-muted m-0 text-center">{{ poll.description }}</p>
+        <h2 class="h4 mb-2 text-center">{{ poll?.title }}</h2>
+        <p class="text-muted m-0 text-center">{{ poll?.description }}</p>
         
         <div class="row">
             <div>
@@ -43,8 +43,8 @@
         </div>
     </div>
 
-    <a :href="`/polls/${poll.uuid}`" class="btn btn-success btn-lg w-100 mt-4">投票する</a>
-    <a href="/polls/create" v-if="isVisibleBtn" class="btn btn-primary w-100 mt-2">新しいアンケートを作成する</a>
+    <a :href="`/polls/${poll?.uuid}`" v-if="!isExpired" class="btn btn-success btn-lg w-100 mt-4">投票する</a>
+    <a href="/polls/create" class="btn btn-primary w-100 mt-2 btn-lg">新しいアンケートを作成する</a>
 </div>
 </template>
 
@@ -53,15 +53,9 @@ import { Chart as ChartJS, Title, ArcElement, BarElement, Tooltip, Legend, Categ
 import { Pie, Bar } from 'vue-chartjs'
 import { generateColorPalette } from '@/utils/colorPalette'
 import ProgressBar from 'primevue/progressbar';
+import axios from 'axios';
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend)
 export default {
-    props: {
-        poll: { type: Object, required: true },
-        totalVotes: { type: Number, required: true },
-        lastVoteDate: { type: String, required: true },
-        remainingTime: { type: String, required: true },
-        isExpired: { type: Boolean, required: true },
-    },
     components: {
         Pie,
         Bar,
@@ -69,53 +63,78 @@ export default {
     },
     data() {
         return {
-            progressData: this.initProgressData(this.poll.poll_options),
+            poll: null, 
+            progressData: [],
             pieData: {
-                labels: this.setLabels(this.poll.poll_options),
-                datasets: [
-                    {
-                        backgroundColor: generateColorPalette(this.poll.poll_options.length),
-                        data: this.setDatasets(this.poll.poll_options),
-                    }
-                ]
+                labels: [],
+                datasets: []
             },
             pieOptions: [],
             barData: {
-                labels: this.setLabels(this.poll.poll_options),
-                datasets: [
-                    {
-                        label: '投票数',
-                        backgroundColor: '#42A5F5',
-                        data: this.setDatasets(this.poll.poll_options),
-                    }
-                ]
+                labels: [],
+                datasets: []
             },
             barOptions: [],
             showChart: 'bar',
-            isVisibleBtn: localStorage.getItem('pollIdentifier') == this.poll.uuid,
+            totalVotes: 0,
+            lastVoteDate: 'なし',
+            remainingTime: '',
+            isExpired: false,
         }
     },
-    mounted() {
-        this.progressData = this.setProgressData(this.poll.poll_options);
+    async mounted() {
+        const uuid = this.$route.params.uuid;
+        await axios.get(`/api/polls/${uuid}/results`)
+            .then(response => {
+                console.log(response)
+                this.poll = response.data;
+                this.totalVotes = response.data?.votes?.length;
+                this.lastVoteDate = response.data?.votes?.length ? new Date(response.data?.votes[response.data?.votes.length -1 ].created_at)?.toLocaleString() : 'なし';
+                this.remainingTime = response.data?.remainingTime;
+                this.isExpired = response.data?.isExpired;
+                this.pieData = {
+                    labels: this.setLabels(response.data?.poll_options),
+                    datasets: [
+                        {
+                            backgroundColor: generateColorPalette(response.data?.poll_options.length),
+                            data: this.setDatasets(response.data?.poll_options),
+                        }
+                    ]
+                };
+                this.barData = {
+                    labels: this.setLabels(response.data?.poll_options),
+                    datasets: [
+                        {
+                            label: '投票数',
+                            backgroundColor: '#42A5F5',
+                            data: this.setDatasets(response.data?.poll_options),
+                        }
+                    ]
+                };
+                this.progressData = this.setProgressData(response.data?.poll_options);
+            })
+            .catch(error => {
+                console.log(error);
+            });
     },
     methods: {
         initProgressData(pollOptions) {
-            return pollOptions.map(option => ({
+            return pollOptions?.map(option => ({
                 label: option.text,
                 value: 0,
             }));
         },
         setProgressData(pollOptions) {
-            return pollOptions.map(option => ({
-                label: option.text + `（${option.votes?.length}票）` + Math.round((option.votes?.length / this.totalVotes || 0) * 100) + '%',
+            return pollOptions?.map(option => ({
+                label: option.text + `（${option.votes?.length ?? 0 }票）` + Math.round((option.votes?.length / this.totalVotes || 0) * 100) + '%',
                 value: Math.round((option.votes?.length / this.totalVotes) * 100),
             }));
         },
         setLabels(pollOptions) {
-            return pollOptions.map(option => option.text)
+            return pollOptions?.map(option => option.text)
         },
         setDatasets(pollOptions) {
-            return pollOptions.map(option => option.votes?.length)
+            return pollOptions?.map(option => option.votes?.length)
         },
         showBarChart() {
             this.showChart = 'bar'

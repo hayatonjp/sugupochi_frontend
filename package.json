@@ -17,6 +17,7 @@
     "@chenfengyuan/vue-qrcode": "^2.0.0",
     "axios": "^1.12.2",
     "bootstrap": "^5.3.0",
+    "bootstrap-icons": "^1.13.1",
     "chart.js": "^4.5.1",
     "pinia": "^3.0.3",
     "primeflex": "^4.0.0",
