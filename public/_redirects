@@ -1,0 +1,6 @@
+# API routes - redirect to your backend API
+# Replace "your-backend-api-domain.com" with your actual API URL from Cloudflare Pages environment variable API_URL
+/api/* https://your-backend-api-domain.com/api/:splat 200
+
+# SPA fallback - redirect all other routes to index.html
+/* /index.html 200

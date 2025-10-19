@@ -18,9 +18,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.API_URL,
+        target: process.env.API_URL || 'http://localhost:5757',
         changeOrigin: true,
       }
     }
+  },
+  define: {
+    __API_URL__: JSON.stringify(process.env.API_URL || '/api')
   }
 })
