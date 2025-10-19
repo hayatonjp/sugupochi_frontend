@@ -5,7 +5,7 @@
             <i class="bi bi-check-lg"></i>
         </div>
         <h1 class="h2 mb-3">投票が完了しました！</h1>
-        <a :href="`/polls/${poll.uuid}/results`" class="btn btn-primary mb-5">
+        <a :href="`/polls/${$route.params.uuid}/results`" class="btn btn-primary mb-5">
             投票結果を見る
         </a>
         <div class="border-top border-3 pt-5 w-md-50 w-100 d-flex mx-auto"></div>
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { getVoterIdentifier, saveVoterIdentifier } from '@/utils/localStorage'
 export default {
     data() {
@@ -52,7 +53,7 @@ export default {
     },
     async mounted() {
         const uuid = this.$route.params.uuid;
-        await axios.get(`/polls/${uuid}/vote/complete`)
+        await axios.get(`/api/polls/${uuid}/vote/complete`)
             .then(response => {
                 this.poll = response.data;
                 this.voterIdentifier = getVoterIdentifier(response.data?.uuid);
@@ -62,11 +63,8 @@ export default {
             });
             
         this.setAdMaxPc();
-        if (!this.voterIdentifier) {
-            location.href = "/"
-        }
-        if (!getVoterIdentifier(response.data?.uuid)) {
-            saveVoterIdentifier(response.data?.uuid)
+        if (!getVoterIdentifier(uuid)) {
+            saveVoterIdentifier(uuid)
         }
     },
 }

@@ -54,6 +54,7 @@ import { Pie, Bar } from 'vue-chartjs'
 import { generateColorPalette } from '@/utils/colorPalette'
 import ProgressBar from 'primevue/progressbar';
 import axios from 'axios';
+import { jst } from '@/utils/date'
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend)
 export default {
     components: {
@@ -86,10 +87,9 @@ export default {
         const uuid = this.$route.params.uuid;
         await axios.get(`/api/polls/${uuid}/results`)
             .then(response => {
-                console.log(response)
                 this.poll = response.data;
                 this.totalVotes = response.data?.votes?.length;
-                this.lastVoteDate = response.data?.votes?.length ? new Date(response.data?.votes[response.data?.votes.length -1 ].created_at)?.toLocaleString() : 'なし';
+                this.lastVoteDate = response.data?.votes?.length ? jst(response.data?.votes[response.data?.votes.length -1 ].created_at) : 'なし';
                 this.remainingTime = response.data?.remainingTime;
                 this.isExpired = response.data?.isExpired;
                 this.pieData = {

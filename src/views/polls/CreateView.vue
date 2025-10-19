@@ -27,10 +27,10 @@
                     <button type="button" class="btn btn-secondary mb-2" @click="addOption">選択肢を追加</button>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">有効期限（最長の期限は当日の23:59までで、未設定の場合は作成してから10分後が期限となります。）</label>
+                    <label class="form-label">有効期限（現在時刻以降から当日の23:59まで設定可能。未設定の場合は作成してから10分後が期限となります。）</label>
                     <input type="datetime-local" name="expires_at" v-model="expiresAt" class="form-control"
-                        min="{{ \Carbon\Carbon::today()->format('Y-m-d') }}T00:00"
-                        max="{{ \Carbon\Carbon::today()->format('Y-m-d') }}T23:59">
+                        :min="todayMin"
+                        :max="todayMax">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">パスコード（投票画面で入力してもらうコードです。未設定の場合は自動で設定されます。）</label>
@@ -68,6 +68,24 @@ export default {
             passcode: null,
             errors: JSON.parse(this.errorsJson ?? '[]'),
             isSubmitting: false,
+        }
+    },
+    computed: {
+        todayMin() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hour}:${minute}`;
+        },
+        todayMax() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}T23:59`;
         }
     },
     methods: {
@@ -121,6 +139,24 @@ export default {
             if (this.isSubmitting) {
                 return;
             }
+            
+            // クライアントサイドでの日付・時刻検証
+            if (this.expiresAt) {
+                const selectedDate = new Date(this.expiresAt);
+                const now = new Date();
+                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                
+                if (selectedDate < now) {
+                    this.errors = ['有効期限は現在時刻より後の時間を設定してください。'];
+                    return;
+                }
+                
+                if (selectedDate > todayEnd) {
+                    this.errors = ['有効期限は今日の23:59まで設定可能です。'];
+                    return;
+                }
+            }
+            
             this.isSubmitting = true;
             
             axios.post('/api/polls', {

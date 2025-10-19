@@ -83,14 +83,14 @@ export default {
             isSubmitting: false,
         }
     },
-    mounted() {
+    async mounted() {
         const uuid = this.$route.params.uuid;
-        axios.get(`/api/polls/${uuid}`)
+        await axios.get(`/api/polls/${uuid}`)
             .then(response => {
                 this.poll = response.data;
-                this.isVerified = getVerifiedPasscode(response.data?.uuid) ? true : false;
+                this.isVerified = getVerifiedPasscode(uuid) ? true : false;
                 this.isExpired = new Date(response.data?.expires_at)?.toISOString() < new Date().toISOString();
-                this.isVoted = getVoterIdentifier(response.data?.uuid) ? true : false;
+                this.isVoted = getVoterIdentifier(uuid) ? true : false;
             })
             .catch(error => {
                 window.location.href = "/"
@@ -121,7 +121,7 @@ export default {
             })
             .then(response => {
                 const voterIdentifier = response.data?.voterIdentifier;
-                window.location.href = `/api/polls/${this.poll?.uuid}/vote/complete${voterIdentifier ? '?voterIdentifier=' + voterIdentifier : ''}`;
+                window.location.href = `/polls/${this.poll?.uuid}/vote/complete${voterIdentifier ? '?voterIdentifier=' + voterIdentifier : ''}`;
             })
             .catch(error => {
                 alert('投票中にエラーが発生しました。');
