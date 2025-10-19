@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import apiClient from '@/utils/axios';
 import { getVoterIdentifier, saveVoterIdentifier } from '@/utils/localStorage'
 export default {
     data() {
@@ -53,7 +53,7 @@ export default {
     },
     async mounted() {
         const uuid = this.$route.params.uuid;
-        await axios.get(`/api/polls/${uuid}/vote/complete`)
+        await apiClient.get(`/polls/${uuid}/vote/complete`)
             .then(response => {
                 this.poll = response.data;
                 this.voterIdentifier = getVoterIdentifier(response.data?.uuid);

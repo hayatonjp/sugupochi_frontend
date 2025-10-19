@@ -18,12 +18,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.API_URL || 'http://localhost:5757',
+        target: process.env.VITE_API_URL || 'http://localhost:5757',
         changeOrigin: true,
       }
     }
   },
   define: {
-    __API_URL__: JSON.stringify(process.env.API_URL || '/api')
+    __API_URL__: JSON.stringify(process.env.VITE_API_URL || '/api')
   }
 })

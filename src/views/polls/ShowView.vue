@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '@/utils/axios';
 import { jst } from '@/utils/date'
 import { getVoterIdentifier } from '@/utils/localStorage'
 import { getVerifiedPasscode, saveVerifiedPasscode } from '../../utils/localStorage';
@@ -85,7 +85,7 @@ export default {
     },
     async mounted() {
         const uuid = this.$route.params.uuid;
-        await axios.get(`/api/polls/${uuid}`)
+        await apiClient.get(`/polls/${uuid}`)
             .then(response => {
                 this.poll = response.data;
                 this.isVerified = getVerifiedPasscode(uuid) ? true : false;
@@ -116,7 +116,7 @@ export default {
                 return;
             }
             this.isSubmitting = true;
-            axios.post(`/api/polls/${this.poll?.uuid}/vote`, {
+            apiClient.post(`/polls/${this.poll?.uuid}/vote`, {
                 poll_option_id: this.selectedOption,
             })
             .then(response => {

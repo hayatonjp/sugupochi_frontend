@@ -75,7 +75,7 @@
 
 <script>
 import { jst } from '@/utils/date'
-import axios from 'axios';
+import apiClient from '@/utils/axios';
 import VueQrcode from '@chenfengyuan/vue-qrcode'
 export default {
     data() {
@@ -90,7 +90,7 @@ export default {
     },
     mounted() {
         const uuid = this.$route.params.uuid;
-        axios.get(`/api/polls/${uuid}/create/complete`)
+        apiClient.get(`/polls/${uuid}/create/complete`)
             .then(response => {
                 this.poll = response.data.poll;
                 this.shareUrl = response.data.shareUrl;

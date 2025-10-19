@@ -53,7 +53,7 @@ import { Chart as ChartJS, Title, ArcElement, BarElement, Tooltip, Legend, Categ
 import { Pie, Bar } from 'vue-chartjs'
 import { generateColorPalette } from '@/utils/colorPalette'
 import ProgressBar from 'primevue/progressbar';
-import axios from 'axios';
+import apiClient from '@/utils/axios';
 import { jst } from '@/utils/date'
 ChartJS.register(CategoryScale, LinearScale, ArcElement, BarElement, Title, Tooltip, Legend)
 export default {
@@ -85,7 +85,7 @@ export default {
     },
     async mounted() {
         const uuid = this.$route.params.uuid;
-        await axios.get(`/api/polls/${uuid}/results`)
+        await apiClient.get(`/polls/${uuid}/results`)
             .then(response => {
                 this.poll = response.data;
                 this.totalVotes = response.data?.votes?.length;

@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '@/utils/axios';
 export default {
     props: {
         errorsJson: { type: String, required: false },
@@ -159,7 +159,7 @@ export default {
             
             this.isSubmitting = true;
             
-            axios.post('/api/polls', {
+            apiClient.post('/polls', {
                 title: this.title,
                 description: this.description,
                 options: this.pollOptions.map(option => option.text),
